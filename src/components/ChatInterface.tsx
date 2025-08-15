@@ -22,9 +22,10 @@ interface ChatInterfaceProps {
   chatId: string;
   persona: Persona;
   onReset: () => void;
+  customApiKey?: string;
 }
 
-export default function ChatInterface({ chatId, persona, onReset }: ChatInterfaceProps) {
+export default function ChatInterface({ chatId, persona, onReset, customApiKey }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +57,10 @@ export default function ChatInterface({ chatId, persona, onReset }: ChatInterfac
       const response = await fetch(`/api/chat/${chatId}/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userMessage: userMessage.content }),
+        body: JSON.stringify({ 
+          userMessage: userMessage.content,
+          customApiKey: customApiKey 
+        }),
       });
 
       if (!response.ok) {

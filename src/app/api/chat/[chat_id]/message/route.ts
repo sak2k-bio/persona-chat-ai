@@ -12,7 +12,7 @@ const GEMINI_API_KEYS = [
 const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 
 // Track which keys are currently overloaded
-let overloadedKeys = new Set<string>();
+const overloadedKeys = new Set<string>();
 let currentKeyIndex = 0;
 
 function getGeminiUrl(model: string = DEFAULT_GEMINI_MODEL) {
@@ -94,7 +94,7 @@ function trimConversationIfNeeded(history: any[]) {
 	}
 }
 
-async function sendPromptToGemini(history: any[]) {
+async function sendPromptToGemini(history: any[], customApiKey?: string) {
 	trimConversationIfNeeded(history);
 	const contents = buildGeminiContents(history);
 
@@ -106,7 +106,38 @@ async function sendPromptToGemini(history: any[]) {
 		},
 	};
 
-	// Try each available API key
+	// If custom API key is provided, use it first
+	if (customApiKey && customApiKey.trim()) {
+		try {
+			console.log('Using custom API key provided by user');
+			
+			const response = await fetch(`${getGeminiUrl()}?key=${customApiKey}`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(body),
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				const assistantReply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+				console.log('Success with custom API key');
+				return assistantReply;
+			}
+
+			// If custom key fails, log the error and fall back to regular keys
+			const errText = await response.text().catch(() => '');
+			console.log(`Custom API key failed with status ${response.status}: ${errText}`);
+			
+			// Continue to fallback keys
+		} catch (error) {
+			console.error('Error with custom API key:', error);
+			// Continue to fallback keys
+		}
+	}
+
+	// Try each available API key as fallback
 	for (let attempt = 0; attempt < GEMINI_API_KEYS.length; attempt++) {
 		const apiKey = getNextAvailableKey();
 		if (!apiKey) {
@@ -225,7 +256,7 @@ export async function POST(
 		const supabase = createClient(supabaseUrl, supabaseKey);
 
 		const { chat_id } = await params;
-		const { userMessage } = await request.json();
+		const { userMessage, customApiKey } = await request.json();
 
 		const { data: sessionData, error: fetchError } = await supabase
 			.from('chat_sessions')
@@ -240,7 +271,7 @@ export async function POST(
 		const conversationHistory = sessionData.history;
 		conversationHistory.push({ role: 'user', content: userMessage });
 
-		const assistantReply = await sendPromptToGemini(conversationHistory);
+		const assistantReply = await sendPromptToGemini(conversationHistory, customApiKey);
 
 		if (!assistantReply) {
 			return NextResponse.json({ error: 'Failed to get a response from Gemini.' }, { status: 500 });
