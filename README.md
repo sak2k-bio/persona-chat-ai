@@ -1,4 +1,4 @@
-# 🚀 Persona Chat App - AI Mentors Edition
+# 🚀 Persona Chat AI App - AI Mentors Edition
 
 A beautiful Next.js chat application featuring two legendary Indian tech educators: **Hitesh Choudhary** and **Piyush Garg**. Chat with these AI mentors to get personalized programming guidance, tech advice, and coding insights in their authentic styles.
 
