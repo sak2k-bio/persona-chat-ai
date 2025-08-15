@@ -2,6 +2,8 @@
 
 A beautiful Next.js chat application featuring two legendary Indian tech educators: **Hitesh Choudhary** and **Piyush Garg**. Chat with these AI mentors to get personalized programming guidance, tech advice, and coding insights in their authentic styles.
 
+![alt text](https://github.com/sak2k-bio/persona-chat-ai/blob/fe657fc7d5e399c854caec1ec576f02a7dd73510/public/assets/how_it_looks.png)
+
 ## ✨ Features
 
 - **🤖 Dual AI Mentors**: Chat with Hitesh Choudhary or Piyush Garg
